@@ -4,6 +4,8 @@
 pkgs.mkShell {
   packages = with pkgs; [
     upx
-    just
+	gnumake
+	git
+	vim
   ];
 }
