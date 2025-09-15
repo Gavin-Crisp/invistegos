@@ -4,7 +4,7 @@ Undetectable steganographic disk encryption
 
 ## What
 
-Invistegos is an implementaion of the project described by Dominic Schaub in his presentation
+Invistegos is an implementation of the project described by Dominic Schaub in his presentation
 [Perfectly Deniable Steganographic Disk Encryption](https://www.blackhat.com/eu-18/briefings/schedule/#perfectly-deniable-steganographic-disk-encryption-12745).
 The goal is to create two full operating systems, the cover and the hidden, on the same disk such
 that the cover system can function with no awareness of the hidden system without any unusual
