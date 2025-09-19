@@ -7,5 +7,6 @@ pkgs.mkShell {
 	gnumake
 	git
 	vim
+	openssh_gssapi
   ];
 }
