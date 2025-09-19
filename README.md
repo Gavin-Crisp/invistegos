@@ -18,13 +18,21 @@ seen it working, and yet it was just out of reach. So I guess I'm making it now.
 
 ## How
 
+### Base Ideas
+
 See Schaub's [presentation](./eu-18-Schaub-Perfectly-Deniable-Steganographic-Disk-Encryption.pdf)
+
+### Differences
+
+- Instead of using a Feistel network for dispersal, my implementation uses a linear congruential
+generator, because I don't trust Feistel to never have a collision.
 
 ## Project Layout
 
 ```text
 invistegos
-├── loader - initial executable that decodes and loads bootstrap from disk
 ├── bootstrap - userspace executable that emulates kernel module
-└── kernmod - LKM that manages encryption, ECC, and system isolation
+├── entry - initial executable that decodes and loads bootstrap from disk
+├── kernmod - LKM that manages encryption, ECC, and system isolation
+└── lcg - dispersal algorithm to spread coding blocks onto disk
 ```
