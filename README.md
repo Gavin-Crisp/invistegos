@@ -34,5 +34,5 @@ invistegos
 ├── bootstrap - userspace executable that emulates kernel module
 ├── entry - initial executable that decodes and loads bootstrap from disk
 ├── kernmod - LKM that manages encryption, ECC, and system isolation
-└── lcg - dispersal algorithm to spread coding blocks onto disk
+└── shared - code shared between bootstrap and kernel
 ```
