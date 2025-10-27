@@ -6,7 +6,6 @@ let
 in pkgs.mkShell {
   packages = [
     pkgs.upx
-	pkgs.gnumake
 	pkgs.git
 	pkgs.vim
 	pkgs.openssh_gssapi

@@ -1,3 +1,5 @@
+// TODO: account for endianess
+
 const generator_polynomial: Crc = 37;
 const crc_size_bytes = 2;
 
@@ -65,5 +67,5 @@ test check_message {
 
     const check_crc = check_message(&appended);
 
-    std.debug.print("Message: {X}\nCRC: {X}\nAppended: {X}\nCheck CRC: {X}\n", .{ message, crc, appended, check_crc });
+    try std.testing.expectEqual(0, check_crc);
 }
