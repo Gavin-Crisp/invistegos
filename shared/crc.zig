@@ -1,9 +1,8 @@
 // TODO: account for endianess
 
-const generator_polynomial: Crc = 37;
-const crc_size_bytes = 2;
+const config = @import("config");
 
-pub const Crc = @Type(.{ .int = .{ .bits = crc_size_bytes * 8, .signedness = .unsigned } });
+pub const Crc = @Type(.{ .int = .{ .bits = config.crc_bytes * 8, .signedness = .unsigned } });
 
 const crc_bits = @typeInfo(Crc).int.bits;
 const high_bit = 1 << (crc_bits - 1);
@@ -26,7 +25,7 @@ fn check_byte(byte: u8) Crc {
     for (0..8) |_| {
         remainder =
             if (remainder & high_bit != 0)
-                (remainder << 1) ^ generator_polynomial
+                (remainder << 1) ^ config.crc_generator
             else
                 remainder << 1;
     }
@@ -49,7 +48,7 @@ test crc_table {
     const expectEqual = @import("std").testing.expectEqual;
 
     try expectEqual(0, crc_table[0]);
-    try expectEqual(generator_polynomial, crc_table[1]);
+    try expectEqual(config.crc_generator, crc_table[1]);
 }
 
 test check_message {
@@ -57,12 +56,12 @@ test check_message {
 
     const message = "lol. lmao, even.";
     const crc = check_message(message);
-    const crc_bytes: [crc_size_bytes]u8 = @bitCast(crc);
+    const crc_bytes: [config.crc_bytes]u8 = @bitCast(crc);
 
-    var appended: [message.len + crc_size_bytes]u8 = undefined;
+    var appended: [message.len + config.crc_bytes]u8 = undefined;
     @memcpy(appended[0..message.len], message);
-    for (0..crc_size_bytes) |i| {
-        appended[message.len + i] = crc_bytes[crc_size_bytes - 1 - i];
+    for (0..config.crc_bytes) |i| {
+        appended[message.len + i] = crc_bytes[config.crc_bytes - 1 - i];
     }
 
     const check_crc = check_message(&appended);
