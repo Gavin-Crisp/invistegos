@@ -1,15 +1,16 @@
 const config = @import("config");
+const shared = @import("root.zig");
 
-pub const Lcg = @Type(.{ .int = .{ .bits = config.lcg_bits, .signedness = .unsigned } });
+const Index = shared.Index;
 
-const lcg_mult: Lcg = @trunc(config.lcg_mult);
-const lcg_incr: Lcg = @trunc(config.lcg_incr);
+const lcg_mult: Index = @trunc(config.lcg_mult);
+const lcg_incr: Index = @trunc(config.lcg_incr);
 
-pub fn lcg(seed: Lcg) Lcg {
+pub fn lcg(seed: Index) Index {
     return lcg_mult *% seed +% lcg_incr;
 }
 
-pub fn lcg_map(index: Lcg, limit: Lcg) Lcg {
+pub fn lcg_map(index: shared.ShuffledIndex, limit: Index) shared.PhysicalIndex {
     if (index >= limit)
         return index;
 
