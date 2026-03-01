@@ -6,17 +6,18 @@ pub const CodeMatrix = SimpleMatrix(config.c_nodes, ldpc.v_nodes);
 pub const GeneratorMatrix = SimpleMatrix(config.d_nodes, config.c_nodes);
 
 fn SimpleMatrix(m: comptime_int, n: comptime_int) type {
-    const Row = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, n) } });
-    const Col = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, m) } });
+    const Row: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, m) } });
+    const Col: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, n) } });
 
     return struct {
         buf: [M * N]u1 = [_]u1{0} ** (M * N),
 
-        const Self = @This();
-        const M = m;
-        const N = n;
+        pub const M = m;
+        pub const N = n;
 
-        pub fn get(self: Self, row: Row, col: Col) *u1 {
+        const Self = @This();
+
+        pub fn index(self: Self, row: Row, col: Col) *u1 {
             std.debug.assert(row < M);
             std.debug.assert(col < N);
 
@@ -66,7 +67,7 @@ fn SimpleMatrix(m: comptime_int, n: comptime_int) type {
 
             for (0..N) |col_idx| {
                 for (0..M) |row_idx| {
-                    if (self.get(row_idx, col_idx) == 1) {
+                    if (self.index(row_idx, col_idx) == 1) {
                         out.row_indices[elem_idx] = row_idx;
                         elem_idx += 1;
                     }
@@ -92,19 +93,22 @@ fn SimpleMatrix(m: comptime_int, n: comptime_int) type {
     };
 }
 
-pub fn CscMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) type {
-    const RowIndices = @Type(.{ .array = .{ .len = num_nonzeroes, .child = usize } });
-    const ColumnIndices = @Type(.{ .array = .{ .len = n + 1, .child = usize } });
+fn CscMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) type {
+    const Row: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, m) } });
+    const Col: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, n) } });
+    const RowIndices: type = @Type(.{ .array = .{ .len = num_nonzeroes, .child = Row } });
+    const ColumnIndices: type = @Type(.{ .array = .{ .len = n + 1, .child = Col } });
 
     return struct {
         row_indices: RowIndices,
         column_indices: ColumnIndices,
 
-        const Self = @This();
-        const M = m;
-        const N = n;
+        pub const M = m;
+        pub const N = n;
 
-        pub fn get(self: Self, row: usize, col: usize) u1 {
+        const Self = @This();
+
+        pub fn get(self: Self, row: Row, col: Col) u1 {
             std.debug.assert(row < M);
             std.debug.assert(col < N);
 
@@ -121,7 +125,7 @@ pub fn CscMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) 
             return 0;
         }
 
-        pub fn get_col(self: Self, col: usize) [M]u1 {
+        pub fn get_col(self: Self, col: Col) [M]u1 {
             std.debug.assert(col < N);
 
             const col_start = self.column_indices[col];

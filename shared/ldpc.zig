@@ -1,69 +1,86 @@
-const std = @import("std");
 const config = @import("config");
+const shared = @import("root.zig");
 
+const gce = @import("ldpc/gce.zig");
 const matrix = @import("ldpc/matrix.zig");
 
-pub const v_nodes = config.d_nodes + config.c_nodes;
+const c_nodes = config.c_nodes;
+const d_nodes = config.d_nodes;
+pub const v_nodes = d_nodes + c_nodes;
 
-/// TODO: GCE
-const code: matrix.CodeMatrix = .{};
-const generator = blk: {
-    const h = code;
+const EccNode = shared.EccNode;
+
+const Word = [d_nodes]EccNode;
+const CodeWord = [v_nodes]EccNode;
+
+const code = gce.code_matrix.into_csc();
+const generator = init: {
+    const h = gce.code_matrix;
 
     // Reduce h to [-P^T|I_c]
-    for (0..config.c_nodes) |col| {
-        const i = col + config.d_nodes;
+    for (0..c_nodes) |diag_row| {
+        const diag_col = diag_row + d_nodes;
 
         // Ensure a one is on the diagonal
-        const first_one = for (col..config.c_nodes) |n| {
-            if (h.get(n, n) == 1)
-                break n;
+        const first_one = for (diag_row..c_nodes) |row| {
+            if (h.index(row, diag_col) == 1)
+                break row;
         };
-        h.swap_rows(col, first_one);
+        h.swap_rows(diag_row, first_one);
 
         // Remove non-diagonal ones from column
-        for (0..config.c_nodes) |row| {
-            if (row == col) continue;
+        for (0..c_nodes) |row| {
+            if (row == diag_row) continue;
 
-            if (h.get(row, i) == 1) {
-                h.add_rows(col, row);
+            if (h.index(row, diag_col) == 1) {
+                h.add_rows(diag_row, row);
             }
         }
     }
 
     const gen: matrix.GeneratorMatrix = .{};
 
+    // Move I_d into gen
+    for (0..d_nodes) |idx| {
+        gen.index(idx, idx).* = 1;
+    }
+
     // Move P into gen
-    for (0..config.d_nodes) |gen_row| {
-        for (0..config.c_nodes) |gen_col| {
-            gen.get(gen_row, gen_col).* = h.get(gen_col, gen_row).*;
+    for (0..d_nodes) |row| {
+        for (0..c_nodes) |col| {
+            const gen_row = row;
+            const gen_col = col + d_nodes;
+
+            gen.index(gen_row, gen_col).* = h.index(col, row).*;
         }
     }
 
-    break :blk gen;
+    break :init gen.into_csc();
 };
 
-// TODO: Move to more central place
-const Node = u512;
+pub fn encode(word: Word) CodeWord {
+    var code_word: CodeWord = .{};
 
-pub fn encode(data: [config.d_nodes]Node) [config.c_nodes]Node {
-    const out: [config.c_nodes]Node = undefined;
+    // The first d_nodes Nodes are unchanged, as the first d_nodes columns of the generator are an identity matrix.
+    @memcpy(code_word[0..d_nodes], &word);
 
-    // Iterate through columns of gen_matrix
-    for (0..config.c_nodes) |j| {
-        var code_node: Node = 0;
+    for (d_nodes..v_nodes) |code_idx| {
+        const gen_col = generator.get_col(code_idx);
 
-        // Sum data and column
-        for (0..config.d_nodes) |i|
-            code_node ^= data[i] * generator.get(i, j);
-
-        out[j] = code_node;
+        for (gen_col, word) |gen_elem, word_node| {
+            if (gen_elem == 1) {
+                code_word[code_idx] ^= word_node;
+            }
+        }
     }
 
-    return out;
+    return code_word;
 }
 
-// TODO: add multiple decoder algorithms
+pub fn decode(code_word: CodeWord) Word {
+    _ = code_word;
+    @panic("decode unimplemented");
+}
 
 test {
     _ = matrix;
