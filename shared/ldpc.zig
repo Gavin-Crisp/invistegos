@@ -1,5 +1,6 @@
 const config = @import("config");
 const shared = @import("root.zig");
+const std = @import("std");
 
 const gce = @import("ldpc/gce.zig");
 const matrix = @import("ldpc/matrix.zig");
@@ -9,9 +10,6 @@ const d_nodes = config.d_nodes;
 pub const v_nodes = d_nodes + c_nodes;
 
 const EccNode = shared.EccNode;
-
-const Word = [d_nodes]EccNode;
-const CodeWord = [v_nodes]EccNode;
 
 const code = gce.code_matrix.into_csc();
 const generator = init: {
@@ -58,8 +56,8 @@ const generator = init: {
     break :init gen.into_csc();
 };
 
-pub fn encode(word: Word) CodeWord {
-    var code_word: CodeWord = .{};
+pub fn encode(word: [d_nodes]EccNode) [v_nodes]EccNode {
+    var code_word: [v_nodes]EccNode = .{};
 
     // The first d_nodes Nodes are unchanged, as the first d_nodes columns of the generator are an identity matrix.
     @memcpy(code_word[0..d_nodes], &word);
@@ -77,9 +75,27 @@ pub fn encode(word: Word) CodeWord {
     return code_word;
 }
 
-pub fn decode(code_word: CodeWord) Word {
+pub fn decode(code_word: [v_nodes]?EccNode) ?[d_nodes]EccNode {
+    var word: [d_nodes]EccNode = undefined;
+
+    // Check the first d_nodes Nodes for errors and resolve them.
+    for (0..d_nodes) |node_idx| {
+        if (code_word[node_idx]) continue;
+
+        if (!resolve_missing(code_word, node_idx)) {
+            return null;
+        }
+    }
+
+    @memcpy(&word, code_word[0..d_nodes]);
+
+    return word;
+}
+
+fn resolve_missing(code_word: [v_nodes]?EccNode, missing: usize) bool {
     _ = code_word;
-    @panic("decode unimplemented");
+    _ = missing;
+    @panic("resolve_missing unimplemented");
 }
 
 test {
