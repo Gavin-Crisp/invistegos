@@ -1,5 +1,7 @@
 const std = @import("std");
 const config = @import("config");
+const csc = @import("csc.zig");
+const csr = @import("csr.zig");
 const ldpc = @import("../ldpc.zig");
 
 pub const CodeMatrix = SimpleMatrix(config.c_nodes, ldpc.v_nodes);
@@ -88,61 +90,39 @@ fn SimpleMatrix(m: comptime_int, n: comptime_int) type {
                 }
             }
 
-            return CscMatrix(num_nonzeroes, M, N);
-        }
-    };
-}
-
-fn CscMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) type {
-    const Row: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, m) } });
-    const Col: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = std.math.log2_int_ceil(comptime_int, n) } });
-    const RowIndices: type = @Type(.{ .array = .{ .len = num_nonzeroes, .child = Row } });
-    const ColumnIndices: type = @Type(.{ .array = .{ .len = n + 1, .child = Col } });
-
-    return struct {
-        row_indices: RowIndices,
-        column_indices: ColumnIndices,
-
-        pub const M = m;
-        pub const N = n;
-
-        const Self = @This();
-
-        pub fn get(self: Self, row: Row, col: Col) u1 {
-            std.debug.assert(row < M);
-            std.debug.assert(col < N);
-
-            const col_start = self.column_indices[col];
-            const col_end = self.column_indices[col + 1];
-            const elem_rows = self.row_indices[col_start..col_end];
-
-            for (elem_rows) |elem| {
-                if (row == elem) {
-                    return 1;
-                }
-            }
-
-            return 0;
+            return csc.CscMatrix(num_nonzeroes, M, N);
         }
 
-        pub fn get_col(self: Self, col: Col) [M]u1 {
-            std.debug.assert(col < N);
+        pub fn into_csr(self: Self) Csr(self) {
+            var out = .{};
 
-            const col_start = self.column_indices[col];
-            const col_end = self.column_indices[col + 1];
-            const elem_rows = self.row_indices[col_start..col_end];
+            out.column_indices[0] = 0;
+            var elem_idx = 0;
 
-            var out: [M]u1 = .{0};
-            var elem_index = 0;
-
-            for (0..M) |row| {
-                if (row == elem_rows[elem_index]) {
-                    out[row] = 1;
-                    elem_index += 1;
+            for (0..N) |col_idx| {
+                for (0..M) |row_idx| {
+                    if (self.index(row_idx, col_idx) == 1) {
+                        out.row_indices[elem_idx] = row_idx;
+                        elem_idx += 1;
+                    }
                 }
+
+                out.column_indices[col_idx + 1] = elem_idx;
             }
 
             return out;
+        }
+
+        fn Csr(self: Self) type {
+            var num_nonzeroes = 0;
+
+            for (self.buf) |elem| {
+                if (elem == 1) {
+                    num_nonzeroes += 1;
+                }
+            }
+
+            return csr.CsrMatrix(num_nonzeroes, M, N);
         }
     };
 }

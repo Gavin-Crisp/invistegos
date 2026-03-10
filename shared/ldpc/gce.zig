@@ -1,4 +1,4 @@
-const matrix = @import("matrix.zig");
+const simple_matrix = @import("simple_matrix.zig");
 
 /// TODO: Implement GCE
-pub const code_matrix: matrix.CodeMatrix = .{};
+pub const code_matrix: simple_matrix.CodeMatrix = .{};
