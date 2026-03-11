@@ -63,12 +63,10 @@ pub fn encode(word: [d_nodes]EccNode) [v_nodes]EccNode {
     @memcpy(code_word[0..d_nodes], &word);
 
     for (d_nodes..v_nodes) |code_idx| {
-        const gen_col = generator.get_col(code_idx);
+        const gen_col = generator.get_col_by_indices(code_idx);
 
-        for (gen_col, word) |gen_elem, word_node| {
-            if (gen_elem == 1) {
-                code_word[code_idx] ^= word_node;
-            }
+        for (gen_col) |node_idx| {
+            code_word[code_idx] ^= word[node_idx];
         }
     }
 
