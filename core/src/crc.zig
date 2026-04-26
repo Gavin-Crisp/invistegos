@@ -5,7 +5,7 @@ const EdcSector = shared.EdcSector;
 const EccNode = shared.EccNode;
 const CheckValue = shared.CheckValue;
 
-const high_bit = 1 << (config.crc_bits - 1);
+const high_bit = 1 << (config.crc_bytes * 8 - 1);
 const remainder_init = @import("std").math.maxInt(CheckValue);
 
 const crc_table = blk: {
@@ -13,7 +13,7 @@ const crc_table = blk: {
     var table: [256]CheckValue = undefined;
 
     for (0..table.len) |i| {
-        var remainder = @as(CheckValue, i) << (config.crc_bits - 8);
+        var remainder = @as(CheckValue, i) << ((config.crc_bytes - 1) * 8);
 
         for (0..8) |_| {
             remainder =

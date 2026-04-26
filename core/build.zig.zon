@@ -1,0 +1,6 @@
+.{
+    .name = .invistegos_core,
+    .fingerprint = 0x5f494371419d6c73,
+    .version = "0.0.0",
+    .paths = .{"build.zig", "build.zig", "src"},
+}
