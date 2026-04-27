@@ -96,11 +96,9 @@ pub const crc = @import("crc.zig");
 pub const lcg = @import("lcg.zig");
 pub const ldpc = @import("ldpc.zig");
 
-pub const Index = @Type(.{ .int = .{ .signedness = .unsigned, .bits = config.lcg_bits } });
-
-pub const PhysicalIndex = Index;
-pub const ShuffledIndex = Index;
-pub const LogicalIndex = Index;
+pub const PhysicalIndex = u64;
+pub const ShuffledIndex = u64;
+pub const LogicalIndex = u64;
 
 pub const Sector = u4096;
 pub const EdcSector = packed struct(Sector) { ecc_node: EccNode, check_value: CheckValue };

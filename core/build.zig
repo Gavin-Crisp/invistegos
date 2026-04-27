@@ -3,9 +3,9 @@ const std = @import("std");
 fn get_config(b: *std.Build) *std.Build.Step.Options {
     const config = b.addOptions();
 
-    const lcg_bits = b.option(u16, "lcg_bits", "bit width of lcg distribution") orelse 32;
-    const lcg_mult = b.option(u64, "lcg_mult", "multiplier for lcg distribution") orelse 3452;
-    const lcg_incr = b.option(u64, "lcg_incr", "increment for lcg distribution") orelse 10958;
+    const lcg_iterations = b.option(u64, "lcg_iterations", "iteration count for lcg_map") orelse 0;
+    const lcg_mult = b.option(u64, "lcg_mult", "multiplier for lcg function") orelse 3457;
+    const lcg_incr = b.option(u64, "lcg_incr", "increment for lcg function") orelse 10951;
 
     const crc_bytes = b.option(u8, "crc_bytes", "byte width of crc value") orelse 4;
     const crc_generator = b.option(u256, "crc_generator", "CRC generator polynomial") orelse 245;
@@ -14,7 +14,7 @@ fn get_config(b: *std.Build) *std.Build.Step.Options {
     const c_nodes = b.option(u64, "c_nodes", "number of check sectors in ldpc scheme") orelse 8;
     const ldpc_girth = b.option(u8, "ldpc_girth", "minimum cycle length in ldpc scheme") orelse 4;
 
-    config.addOption(u16, "lcg_bits", lcg_bits);
+    config.addOption(u64, "lcg_iterations", lcg_iterations);
     config.addOption(u64, "lcg_mult", lcg_mult);
     config.addOption(u64, "lcg_incr", lcg_incr);
     config.addOption(u8, "crc_bytes", crc_bytes);
