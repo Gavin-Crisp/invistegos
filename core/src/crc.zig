@@ -1,12 +1,12 @@
 const config = @import("config");
-const shared = @import("root.zig");
+const core = @import("root.zig");
 
-const EdcSector = shared.EdcSector;
-const EccNode = shared.EccNode;
-const CheckValue = shared.CheckValue;
+const EdcSector = core.EdcSector;
+const EccNode = core.EccNode;
+const CheckValue = core.CheckValue;
 
 const high_bit = 1 << (config.crc_bytes * 8 - 1);
-const remainder_init = @import("std").math.maxInt(CheckValue);
+const remainder_init: CheckValue = @import("std").math.maxInt(CheckValue);
 
 const crc_table = blk: {
     @setEvalBranchQuota(10000);
@@ -46,14 +46,25 @@ pub fn sign_node(node: EccNode) EdcSector {
 fn generate_check_value(node: EccNode) CheckValue {
     const node_bytes = @import("std").mem.asBytes(&node);
 
-    var remainder: CheckValue = remainder_init;
+    var remainder = remainder_init;
 
     for (node_bytes) |byte| {
-        const table_index: u8 = byte ^ @as(u8, @intCast(remainder >> (config.crc_bits - 8)));
+        const table_index: u8 = byte ^ @as(u8, @intCast(remainder >> (config.crc_bytes * 8 - 8)));
         remainder = (remainder << 8) ^ crc_table[table_index];
     }
 
     return remainder;
+}
+
+test "crc" {
+    const expectEqual = @import("std").testing.expectEqual;
+
+    const node_data: EccNode = 0x0384923;
+    const correct_sector = sign_node(node_data);
+    const incorrect_sector = EdcSector{ .ecc_node = node_data << 1, .check_value = correct_sector.check_value };
+
+    try expectEqual(validate_sector(correct_sector), node_data);
+    try expectEqual(validate_sector(incorrect_sector), null);
 }
 
 test crc_table {

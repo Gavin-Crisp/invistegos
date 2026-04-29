@@ -102,7 +102,7 @@ pub const LogicalIndex = u64;
 
 pub const Sector = u4096;
 pub const EdcSector = packed struct(Sector) { ecc_node: EccNode, check_value: CheckValue };
-pub const EccNode: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = 4096 - config.crc_bytes * 8 } });
+pub const EccNode: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = @as(u16, 4096) - config.crc_bytes * 8 } });
 pub const CheckValue: type = @Type(.{ .int = .{ .signedness = .unsigned, .bits = config.crc_bytes * 8 } });
 
 test {
