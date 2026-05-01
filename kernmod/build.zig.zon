@@ -1,0 +1,16 @@
+.{
+    .name = .kernmod,
+    .version = "0.0.0",
+    .fingerprint = 0xfcbae04d6e0980bd, // Changing this has security and trust implications.
+    .minimum_zig_version = "0.15.2",
+    .dependencies = .{
+        .core = .{
+            .path = "../core",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
