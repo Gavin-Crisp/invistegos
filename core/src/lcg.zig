@@ -6,10 +6,9 @@ pub fn lcg(seed: u64, limit: u64) u64 {
     return (seed *% config.lcg_mult +% config.lcg_incr) % limit;
 }
 
-/// 
 pub fn lcg_map(index: core.ShuffledIndex, limit: u64) core.PhysicalIndex {
     std.debug.assert(index < limit);
-    
+
     var ret = lcg(index, limit);
 
     for (0..config.lcg_iterations) |_| ret = lcg(ret, limit);
