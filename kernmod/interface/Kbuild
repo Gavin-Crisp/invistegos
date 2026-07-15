@@ -1,2 +1,0 @@
-obj-m			:= invistegos.o
-invistegos-y	:= interface.o ../zig_out/bin/kernmod.o

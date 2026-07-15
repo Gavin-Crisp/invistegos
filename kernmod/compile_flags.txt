@@ -1,0 +1,4 @@
+-I
+/lib/modules/6.18.19-1.qubes.fc41.x86_64/build/include
+-I
+/lib/modules/6.18.19-1.qubes.fc41.x86_64/build/arch/x86/include
