@@ -5,13 +5,20 @@ pub fn build(b: *std.Build) !void {
 
     createUtilitySteps(b, optimize);
 
+    const kdir_opt = b.option([]const u8, "kdir", "Directory of kernel to build against");
+
     const impl_obj = try createImplObj(b, optimize);
-    const kernmod_step = try compileKernmod(b, impl_obj);
+    const kernmod_step = try compileKernmod(b, impl_obj, kdir_opt);
     b.getInstallStep().dependOn(kernmod_step);
 }
 
-fn compileKernmod(b: *std.Build, impl_obj: *std.Build.Step.Compile) !*std.Build.Step {
+fn compileKernmod(b: *std.Build, impl_obj: *std.Build.Step.Compile, kdir_opt: ?[]const u8) !*std.Build.Step {
     const kernmod_step = b.step("kernmod", "Invistegos kernel module");
+
+    const kdir = kdir_opt orelse {
+        kernmod_step.dependOn(&b.addFail("Requires -Dkdir").step);
+        return kernmod_step;
+    };
 
     const write = b.addWriteFiles();
     _ = write.addCopyFile(b.path("build/Makefile"), "Makefile");
@@ -21,7 +28,7 @@ fn compileKernmod(b: *std.Build, impl_obj: *std.Build.Step.Compile) !*std.Build.
     _ = write.addCopyDirectory(b.path("src"), "src", .{});
     write.step.dependOn(&impl_obj.step);
 
-    const run_make = b.addSystemCommand(&.{"make"});
+    const run_make = b.addSystemCommand(&.{"make", b.fmt("KDIR={s}", .{kdir})});
     run_make.setCwd(write.getDirectory());
     run_make.step.dependOn(&write.step);
 
@@ -59,6 +66,7 @@ fn createImplObj(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.
         .optimize = optimize,
     });
     impl_obj.root_module.addImport("core", core_dep.module("core"));
+
     impl_obj.bundle_compiler_rt = false;
     impl_obj.want_lto = false;
     impl_obj.root_module.code_model = .kernel;

@@ -7,6 +7,6 @@ else
 # Makefile
 
 default:
-	$(MAKE) -f $$KERNELDIR/Makefile M=$$PWD
+	$(MAKE) -f $(KDIR)/Makefile M=$$PWD
 
 endif
