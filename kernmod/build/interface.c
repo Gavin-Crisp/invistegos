@@ -4,6 +4,18 @@
 #include <linux/bio.h>
 #include <linux/device-mapper.h>
 
+void *kernel_alloc(size_t size) {
+	return kzalloc(size, GFP_KERNEL);
+}
+
+void *kernel_realloc(void *ptr, size_t size) {
+	return krealloc(ptr, size, GFP_KERNEL);
+}
+
+void kernel_free(void *ptr) {
+	kfree(ptr);
+}
+
 int invistegos_impl_ctr(struct dm_target *, unsigned int , char **);
 void invistegos_impl_dtr(struct dm_target *);
 int invistegos_impl_map(struct dm_target *, struct bio *);
