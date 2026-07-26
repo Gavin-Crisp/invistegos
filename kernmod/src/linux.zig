@@ -142,11 +142,11 @@ pub const BioCryptCtx = opaque {};
 pub const BioIntegrityPayload = opaque {};
 pub const BioSet = opaque {};
 
-pub const printk = @extern(fn ([*:0]const c_char, ...) c_int, .{ .name = "_printk" });
-pub const dmGetDevice = @extern(fn (*DmTarget, [*:0]const c_char, BlkMode, **DmDev) c_int, .{ .name = "dm_get_device" });
-pub const dmPutDevice = @extern(fn (*DmTarget, *DmDev) void, .{ .name = "dm_put_device" });
-pub const dmTableGetMode = @extern(fn (*DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
-pub const dmTargetOffset = @extern(fn (*DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
+pub const printk = @extern(fn (fmt: [*:0]const c_char, ...) c_int, .{ .name = "_printk" });
+pub const dmGetDevice = @extern(fn (ti: *DmTarget, path: [*:0]const c_char, mode: BlkMode, result: **DmDev) c_int, .{ .name = "dm_get_device" });
+pub const dmPutDevice = @extern(fn (ti: *DmTarget, d: *DmDev) void, .{ .name = "dm_put_device" });
+pub const dmTableGetMode = @extern(fn (t: *DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
+pub const dmTargetOffset = @extern(fn (t: *DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
 
 pub const BlkMode = c_int;
 
