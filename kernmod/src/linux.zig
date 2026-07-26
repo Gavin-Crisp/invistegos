@@ -10,7 +10,7 @@ pub const DmTarget = extern struct {
     num_write_zeroes_bios: c_uint,
     per_io_data_size: c_uint,
     private: ?*anyopaque,
-    @"error": [*:0]c_char,
+    @"error": [*:0]u8,
     flags: Flags,
 
     pub const Flags = packed struct(u16) {
@@ -142,8 +142,8 @@ pub const BioCryptCtx = opaque {};
 pub const BioIntegrityPayload = opaque {};
 pub const BioSet = opaque {};
 
-pub const printk = @extern(fn (fmt: [*:0]const c_char, ...) c_int, .{ .name = "_printk" });
-pub const dmGetDevice = @extern(fn (ti: *DmTarget, path: [*:0]const c_char, mode: BlkMode, result: **DmDev) c_int, .{ .name = "dm_get_device" });
+pub const printk = @extern(fn (fmt: [*:0]const u8, ...) c_int, .{ .name = "_printk" });
+pub const dmGetDevice = @extern(fn (ti: *DmTarget, path: [*:0]const u8, mode: BlkMode, result: **DmDev) c_int, .{ .name = "dm_get_device" });
 pub const dmPutDevice = @extern(fn (ti: *DmTarget, d: *DmDev) void, .{ .name = "dm_put_device" });
 pub const dmTableGetMode = @extern(fn (t: *DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
 
