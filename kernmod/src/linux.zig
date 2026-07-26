@@ -146,7 +146,6 @@ pub const printk = @extern(fn (fmt: [*:0]const c_char, ...) c_int, .{ .name = "_
 pub const dmGetDevice = @extern(fn (ti: *DmTarget, path: [*:0]const c_char, mode: BlkMode, result: **DmDev) c_int, .{ .name = "dm_get_device" });
 pub const dmPutDevice = @extern(fn (ti: *DmTarget, d: *DmDev) void, .{ .name = "dm_put_device" });
 pub const dmTableGetMode = @extern(fn (t: *DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
-pub const dmTargetOffset = @extern(fn (t: *DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
 
 pub const BlkMode = c_int;
 
