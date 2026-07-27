@@ -1,4 +1,3 @@
-const core = @import("core");
 const linux = @import("linux.zig");
 
 /// Initializes ti

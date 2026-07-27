@@ -149,3 +149,12 @@ pub const dmTableGetMode = @extern(fn (t: *DmTable) BlkMode, .{ .name = "dm_tabe
 
 pub const BlkMode = c_int;
 
+extern fn kernel_malloc(usize) ?*anyopaque;
+pub const kernelMalloc = kernel_malloc;
+
+extern fn kernel_realloc(?*anyopaque, usize) ?*anyopaque;
+pub const kernelRealloc = kernel_realloc;
+
+extern fn kfree(?*anyopaque) void;
+pub const kernelFree = kfree;
+
