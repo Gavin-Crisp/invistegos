@@ -8,11 +8,21 @@ pub fn build(b: *std.Build) !void {
     const kdir_opt = b.option([]const u8, "kdir", "Directory of kernel to build against");
 
     const impl_obj = try createImplObj(b, optimize);
-    const kernmod_step = try compileKernmod(b, impl_obj, kdir_opt);
+
+    createImplStep(b, impl_obj);
+    const kernmod_step = try createKernmodStep(b, impl_obj, kdir_opt);
     b.getInstallStep().dependOn(kernmod_step);
 }
 
-fn compileKernmod(b: *std.Build, impl_obj: *std.Build.Step.Compile, kdir_opt: ?[]const u8) !*std.Build.Step {
+fn createImplStep(b: *std.Build, impl_obj: *std.Build.Step.Compile) void {
+    const impl_step = b.step("impl", "zig code");
+    const install_impl = b.addInstallArtifact(impl_obj, .{
+        .dest_dir = .{ .override = .{ .custom = "obj" } }
+    });
+    impl_step.dependOn(&install_impl.step);
+}
+
+fn createKernmodStep(b: *std.Build, impl_obj: *std.Build.Step.Compile, kdir_opt: ?[]const u8) !*std.Build.Step {
     const kernmod_step = b.step("kernmod", "Invistegos kernel module");
 
     const kdir = kdir_opt orelse {
