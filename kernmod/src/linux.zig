@@ -142,10 +142,17 @@ pub const BioCryptCtx = opaque {};
 pub const BioIntegrityPayload = opaque {};
 pub const BioSet = opaque {};
 
-pub const printk = @extern(fn (fmt: [*:0]const u8, ...) c_int, .{ .name = "_printk" });
-pub const dmGetDevice = @extern(fn (ti: *DmTarget, path: [*:0]const u8, mode: BlkMode, result: **DmDev) c_int, .{ .name = "dm_get_device" });
-pub const dmPutDevice = @extern(fn (ti: *DmTarget, d: *DmDev) void, .{ .name = "dm_put_device" });
-pub const dmTableGetMode = @extern(fn (t: *DmTable) BlkMode, .{ .name = "dm_tabe_get_mode" });
+extern fn _printk(fmt: [*:0]const u8, ...) c_int;
+pub const printk = _printk;
+
+extern fn dm_get_device(ti: *DmTarget, path: [*:0]const u8, mode: BlkMode, result: **DmDev) c_int;
+pub const dmGetDevice = dm_get_device;
+
+extern fn dm_put_device(ti: *DmTarget, d: *DmDev) void;
+pub const dmPutDevice = dm_put_device;
+
+extern fn dm_table_get_mode(t: *DmTable) BlkMode;
+pub const dmTableGetMode = dm_table_get_mode;
 
 pub const BlkMode = c_int;
 
