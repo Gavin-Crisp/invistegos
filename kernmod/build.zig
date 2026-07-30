@@ -78,7 +78,7 @@ fn createImplObj(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.
     impl_obj.root_module.addImport("core", core_dep.module("core"));
 
     impl_obj.bundle_compiler_rt = false;
-    impl_obj.want_lto = false;
+    impl_obj.lto = .none;
     impl_obj.root_module.code_model = .kernel;
     // Kernel disables this, so I need to aswell
     impl_obj.root_module.red_zone = false;
