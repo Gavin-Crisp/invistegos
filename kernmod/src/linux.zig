@@ -10,7 +10,7 @@ pub const DmTarget = extern struct {
     num_write_zeroes_bios: c_uint,
     per_io_data_size: c_uint,
     private: ?*anyopaque,
-    @"error": [*:0]u8,
+    @"error": [*:0]const u8,
     flags: Flags,
 
     pub const Flags = packed struct(u16) {
