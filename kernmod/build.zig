@@ -1,9 +1,14 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) !void {
-    const optimize = b.standardOptimizeOption(.{});
+    var optimize = b.standardOptimizeOption(.{
+        .preferred_optimize_mode = .ReleaseFast,
+    });
 
-    createUtilitySteps(b, optimize);
+    if (optimize == .Debug) {
+        std.debug.print("Cannot build in debug mode, selecting default fast release\n\n", .{});
+        optimize = .ReleaseFast;
+    }
 
     const kdir_opt = b.option([]const u8, "kdir", "Directory of kernel to build against");
 
@@ -11,6 +16,8 @@ pub fn build(b: *std.Build) !void {
 
     createImplStep(b, impl_obj);
     const kernmod_step = try createKernmodStep(b, impl_obj, kdir_opt);
+    createUtilitySteps(b, optimize);
+
     b.getInstallStep().dependOn(kernmod_step);
 }
 
@@ -34,8 +41,8 @@ fn createKernmodStep(b: *std.Build, impl_obj: *std.Build.Step.Compile, kdir_opt:
     _ = write.addCopyFile(b.path("build/Makefile"), "Makefile");
     _ = write.addCopyFile(b.path("build/interface.c"), "interface.c");
     _ = write.addCopyFile(impl_obj.getEmittedBin(), "implementation.o");
-    _ = write.add(".implementation.o.cmd", "implementation.o: src/root.zig");
-    _ = write.addCopyDirectory(b.path("src"), "src", .{});
+    _ = write.add(".implementation.o.cmd", "implementation.o: root.zig");
+    _ = write.addCopyFile(b.path("src/root.zig"), "root.zig");
     write.step.dependOn(&impl_obj.step);
 
     const run_make = b.addSystemCommand(&.{"make", b.fmt("KDIR={s}", .{kdir})});
@@ -68,6 +75,13 @@ fn createImplObj(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.
             .optimize = optimize,
             // Kernel modules don't have stable addresses at link time
             .pic = true,
+            .strip = true,
+            .code_model = .kernel,
+            .stack_protector = false,
+            .stack_check = false,
+            // Kernel disables this
+            .red_zone = false,
+            .omit_frame_pointer = false,
         }),
     });
 
@@ -78,15 +92,8 @@ fn createImplObj(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.
     impl_obj.root_module.addImport("core", core_dep.module("core"));
 
     impl_obj.bundle_compiler_rt = false;
+    impl_obj.bundle_ubsan_rt = false;
     impl_obj.lto = .none;
-    impl_obj.root_module.code_model = .kernel;
-    // Kernel disables this, so I need to aswell
-    impl_obj.root_module.red_zone = false;
-    // __zig_probe_stack requires compiler rt, which is disabled
-    impl_obj.root_module.stack_check = false;
-    impl_obj.root_module.stack_protector = false;
-    impl_obj.root_module.omit_frame_pointer = false;
-    impl_obj.root_module.strip = true;
 
     return impl_obj;
 }
