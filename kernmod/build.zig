@@ -1,14 +1,9 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) !void {
-    var optimize = b.standardOptimizeOption(.{
+    const optimize = b.standardOptimizeOption(.{
         .preferred_optimize_mode = .ReleaseFast,
     });
-
-    if (optimize == .Debug) {
-        std.debug.print("Cannot build in debug mode, selecting default fast release\n\n", .{});
-        optimize = .ReleaseFast;
-    }
 
     const kdir_opt = b.option([]const u8, "kdir", "Directory of kernel to build against");
 
@@ -57,6 +52,9 @@ fn createKernmodStep(b: *std.Build, impl_obj: *std.Build.Step.Compile, kdir_opt:
 }
 
 fn createImplObj(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.Step.Compile {
+    const opt, const warn_release = if (optimize == .Debug) .{ .ReleaseFast, true }
+        else .{ optimize, false };
+
     const impl_target = init: {
         var impl_target_query = try std.Build.parseTargetQuery(.{
             .arch_os_abi = "x86_64-freestanding-gnu",
@@ -72,7 +70,7 @@ fn createImplObj(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/root.zig"),
             .target = impl_target,
-            .optimize = optimize,
+            .optimize = opt,
             // Kernel modules don't have stable addresses at link time
             .pic = true,
             .strip = true,
@@ -94,6 +92,11 @@ fn createImplObj(b: *std.Build, optimize: std.builtin.OptimizeMode) !*std.Build.
     impl_obj.bundle_compiler_rt = false;
     impl_obj.bundle_ubsan_rt = false;
     impl_obj.lto = .none;
+
+    if (warn_release) {
+        const warn_command = b.addSystemCommand(&.{ "echo", "Cannot build in debug mode, selecting default fast release\n\n" });
+        impl_obj.step.dependOn(&warn_command.step);
+    }
 
     return impl_obj;
 }
