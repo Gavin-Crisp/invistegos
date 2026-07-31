@@ -9,32 +9,32 @@ const Self = @This();
 dev: *linux.DmDev,
 
 pub const ContextCreateError = error {
-    no_mem,
-    inval_args,
+    NoMemory,
+    InvalidArgs,
 };
 
 pub fn convertCtxErr(err: ContextCreateError) c_int {
     return switch (err) {
-        ContextCreateError.no_mem => LinuxErr.nomem,
-        ContextCreateError.inval_args => LinuxErr.inval,
+        ContextCreateError.NoMemory => LinuxErr.nomem,
+        ContextCreateError.InvalidArgs => LinuxErr.inval,
     };
 }
 
 pub fn create(alloc: std.mem.Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u8) ContextCreateError!*Self {
     if (argc != 1) {
-        return ContextCreateError.inval_args;
+        return ContextCreateError.InvalidArgs;
     }
 
     const ctx = alloc.create(Self) catch {
         ti.@"error" = "Couldn't allocate Invistegos context";
-        return ContextCreateError.no_mem;
+        return ContextCreateError.NoMemory;
     };
     errdefer alloc.destroy(ctx);
 
     const table_mode = linux.dmTableGetMode(ti.table.?);
     if (linux.dmGetDevice(ti, @ptrCast(argv[0]), table_mode, &ctx.dev) != 0) {
         ti.@"error" = "Couldn't get device";
-        return ContextCreateError.inval_args;
+        return ContextCreateError.InvalidArgs;
     }
 
     return ctx;
