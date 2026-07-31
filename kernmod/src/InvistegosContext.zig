@@ -40,3 +40,8 @@ pub fn create(alloc: std.mem.Allocator, ti: *linux.DmTarget, argc: c_uint, argv:
     return ctx;
 }
 
+pub fn destroy(self: *Self, alloc: std.mem.Allocator, ti: *linux.DmTarget) void {
+    linux.dmPutDevice(ti, self.dev);
+    alloc.destroy(self);
+}
+
