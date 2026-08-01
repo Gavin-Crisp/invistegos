@@ -26,6 +26,7 @@ fn getConfig(b: *std.Build) *std.Build.Step.Options {
     const lcg_iterations = b.option(u64, "lcg_iterations", "iteration count for lcg_map") orelse 0;
     const lcg_mult = b.option(u64, "lcg_mult", "multiplier for lcg function") orelse 3457;
     const lcg_incr = b.option(u64, "lcg_incr", "increment for lcg function") orelse 10951;
+    const lcg_cluster_size = b.option(u64, "lcg_cluster_size", "Number of sectors per shuffling cluster") orelse 1;
 
     const crc_bytes = b.option(u8, "crc_bytes", "byte width of crc value") orelse 4;
     const crc_generator = b.option(u256, "crc_generator", "CRC generator polynomial") orelse 245;
@@ -37,6 +38,7 @@ fn getConfig(b: *std.Build) *std.Build.Step.Options {
     config.addOption(u64, "lcg_iterations", lcg_iterations);
     config.addOption(u64, "lcg_mult", lcg_mult);
     config.addOption(u64, "lcg_incr", lcg_incr);
+    config.addOption(u64, "lcg_cluster_size", lcg_cluster_size);
     config.addOption(u8, "crc_bytes", crc_bytes);
     config.addOption(u256, "crc_generator", crc_generator);
     config.addOption(u64, "d_nodes", d_nodes);

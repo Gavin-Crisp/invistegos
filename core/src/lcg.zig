@@ -2,21 +2,50 @@ const config = @import("config");
 const core = @import("root.zig");
 const std = @import("std");
 
-pub fn lcg(seed: u64, limit: u64) u64 {
-    return (seed *% config.lcg_mult +% config.lcg_incr) % limit;
+pub const Index = core.Index;
+pub const PhysicalIndex = core.PhysicalIndex;
+pub const ShuffledIndex = core.ShuffledIndex;
+pub const cluster_size = config.lcg_cluster_size;
+
+pub const ClusterIndex = Index;
+
+pub fn shuffleCluster(index: ClusterIndex, clusters: u64) ClusterIndex {
+    var result = (index *% config.lcg_mult +% config.lcg_incr) % clusters;
+    for (0..config.lcg_iterations) |_| result = shuffleCluster(result, clusters);
+
+    return result;
 }
 
-pub fn lcgMap(index: core.ShuffledIndex, limit: u64) core.PhysicalIndex {
-    std.debug.assert(index < limit);
-
-    var ret = lcg(index, limit);
-
-    for (0..config.lcg_iterations) |_| ret = lcg(ret, limit);
-
-    return ret;
+pub fn indexCluster(index: Index) u64 {
+    return index / cluster_size;
 }
 
-test lcgMap {
+pub fn indexOffset(index: Index) u64 {
+    return index % cluster_size;
+}
+
+pub fn clusterBeginning(index: ClusterIndex) Index {
+    return index * cluster_size;
+}
+
+pub fn spanClusters(index: Index, span_len: u64) u64 {
+    const first_cluster: ClusterIndex = index / cluster_size;
+    const last_cluster: ClusterIndex = (index + span_len - 1) / cluster_size;
+
+    return last_cluster - first_cluster + 1;
+}
+
+pub fn map(index: ShuffledIndex, sectors: u64) PhysicalIndex {
+    std.debug.assert(index < sectors);
+
+    const cluster: ClusterIndex = indexCluster(index);
+    const offset = indexOffset(index);
+    const clusters = (sectors / cluster_size) + 1;
+
+    return shuffleCluster(cluster, clusters) + offset;
+}
+
+test map {
     const sample_sectors = 1024 * 1024;
     const sample_offset =  0;
     const device_size = 100 * 2 * 1024 * 1024;
@@ -26,7 +55,7 @@ test lcgMap {
         var gap: f128 = 0;
         var indices: [sample_sectors]u64 = undefined;
 
-        for (0..indices.len) |i| indices[i] = lcgMap(i + sample_offset, device_size);
+        for (0..indices.len) |i| indices[i] = map(i + sample_offset, device_size);
         std.mem.sort(u64, &indices, {}, std.sort.asc(u64));
 
         var pairs = std.mem.window(u64, &indices, 2, 1);
@@ -43,3 +72,4 @@ test lcgMap {
     _ = uniformity;
     // std.debug.print("Uniformity: {:.4}%", .{ uniformity });
 }
+

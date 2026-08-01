@@ -10,7 +10,33 @@
 //*            ⇑
 //*            ║ LCG
 //*            ⇓
-//* Shuffled Disk (Sector)
+//* Physical disk as clusters
+//* ┏━Cluster 0━━━━━━━┓ ┏━Cluster 1━━━━━━━┓ ┏━Cluster 2━━━┉┉
+//*  ┌───┬───┬───┬───┐   ┌───┬───┬───┬───┐   ┌───┬───┬───┬┉┉
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  └───┴───┴───┴───┘   └───┴───┴───┴───┘   └───┴───┴───┴┉┉
+//*            ⇑
+//*            ║ LCG
+//*            ⇓
+//* Shuffled clusters
+//* ┏━Cluster 3002━━━━┓ ┏━Cluster 482462━━┓ ┏━Cluster 215━┉┉
+//*  ┌───┬───┬───┬───┐   ┌───┬───┬───┬───┐   ┌───┬───┬───┬┉┉
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  │   │   │   │   │   │   │   │   │   │   │   │   │   │
+//*  └───┴───┴───┴───┘   └───┴───┴───┴───┘   └───┴───┴───┴┉┉
+//*            ⇑
+//*            ║ LCG
+//*            ⇓
+//* Shuffled disk (Sector)
 //* ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬┉┉
 //* │   │   │   │   │   │   │   │   │   │   │   │
 //* │   │   │   │   │   │   │   │   │   │   │   │
@@ -96,9 +122,11 @@ pub const crc = @import("crc.zig");
 pub const lcg = @import("lcg.zig");
 pub const ldpc = @import("ldpc.zig");
 
-pub const PhysicalIndex = u64;
-pub const ShuffledIndex = u64;
-pub const LogicalIndex = u64;
+pub const Index = u64;
+
+pub const PhysicalIndex = Index;
+pub const ShuffledIndex = Index;
+pub const LogicalIndex = Index;
 
 pub const Sector = u4096;
 pub const EdcSector = packed struct(Sector) { ecc_node: EccNode, check_value: CheckValue };
