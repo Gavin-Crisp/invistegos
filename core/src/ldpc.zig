@@ -11,7 +11,7 @@ pub const v_nodes = d_nodes + c_nodes;
 
 const EccNode = shared.EccNode;
 
-const code = gce.code_matrix.into_csr();
+const code = gce.code_matrix.intoCsr();
 const generator = init: {
     const h = gce.code_matrix;
 
@@ -24,14 +24,14 @@ const generator = init: {
             if (h.index(row, diag_col) == 1)
                 break row;
         };
-        h.swap_rows(diag_row, first_one);
+        h.swapRows(diag_row, first_one);
 
         // Remove non-diagonal ones from column
         for (0..c_nodes) |row| {
             if (row == diag_row) continue;
 
             if (h.index(row, diag_col) == 1) {
-                h.add_rows(diag_row, row);
+                h.addRows(diag_row, row);
             }
         }
     }
@@ -53,7 +53,7 @@ const generator = init: {
         }
     }
 
-    break :init gen.into_csc();
+    break :init gen.intoCsc();
 };
 
 pub fn encode(word: [d_nodes]EccNode) [v_nodes]EccNode {
@@ -63,7 +63,7 @@ pub fn encode(word: [d_nodes]EccNode) [v_nodes]EccNode {
     @memcpy(code_word[0..d_nodes], &word);
 
     for (d_nodes..v_nodes) |code_idx| {
-        const gen_col = generator.get_col_by_indices(code_idx);
+        const gen_col = generator.getColByIndices(code_idx);
 
         for (gen_col) |node_idx| {
             code_word[code_idx] ^= word[node_idx];
@@ -75,7 +75,7 @@ pub fn encode(word: [d_nodes]EccNode) [v_nodes]EccNode {
 
 // TODO: change to return error
 pub fn decode(code_word: [v_nodes]?EccNode) ?[d_nodes]EccNode {
-    decode_in_place(code_word);
+    decodeInPlace(code_word);
 
     var word: [d_nodes]EccNode = undefined;
     @memcpy(&word, code_word[0..d_nodes]);
@@ -84,7 +84,7 @@ pub fn decode(code_word: [v_nodes]?EccNode) ?[d_nodes]EccNode {
 }
 
 // TODO: change to return error
-pub fn decode_in_place(code_word: [v_nodes]?EccNode) void {
+pub fn decodeInPlace(code_word: [v_nodes]?EccNode) void {
     const checks_buf = init: {
         var buf: [c_nodes]usize = undefined;
 
@@ -107,7 +107,7 @@ pub fn decode_in_place(code_word: [v_nodes]?EccNode) void {
         break :init count;
     };
 
-    if (!is_decoding_possible(code_word, missing_word_nodes)) {
+    if (!isDecodingPossible(code_word, missing_word_nodes)) {
         return null;
     }
 
@@ -116,7 +116,7 @@ pub fn decode_in_place(code_word: [v_nodes]?EccNode) void {
         var checks_index: usize = 0;
 
         while (checks_index < checks.items.len) {
-            const check_outcome = decode_check(code.get_row_by_indices(checks_index), code_word);
+            const check_outcome = decodeCheck(code.getRowByIndices(checks_index), code_word);
 
             switch (check_outcome) {
                 DecodeCheckOutcome.fully_specified => |outcome| if (outcome.is_valid) {
@@ -147,7 +147,7 @@ pub fn decode_in_place(code_word: [v_nodes]?EccNode) void {
     }
 }
 
-fn is_decoding_possible(code_word: [v_nodes]?EccNode, missing_word_nodes: usize) bool {
+fn isDecodingPossible(code_word: [v_nodes]?EccNode, missing_word_nodes: usize) bool {
     var count: usize = 0;
 
     for (code_word[d_nodes..v_nodes]) |node_opt| {
@@ -165,7 +165,7 @@ const DecodeCheckOutcome = union(enum) {
     unresolvable: void,
 };
 
-fn decode_check(check: []code.Col, code_word: [v_nodes]?EccNode) DecodeCheckOutcome {
+fn decodeCheck(check: []code.Col, code_word: [v_nodes]?EccNode) DecodeCheckOutcome {
     var check_value: EccNode = 0;
     var first_missing_node: ?code.Col = 0;
 

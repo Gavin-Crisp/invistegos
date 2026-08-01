@@ -19,7 +19,7 @@ pub fn CsrMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) 
             std.debug.assert(row < M);
             std.debug.assert(col < N);
 
-            const elem_columns = get_row_by_indices(self, row);
+            const elem_columns = getRowByIndices(self, row);
 
             for (elem_columns) |elem| {
                 if (col == elem) {
@@ -30,10 +30,10 @@ pub fn CsrMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) 
             return 0;
         }
 
-        pub fn get_row(self: Self, row: Row) [N]u1 {
+        pub fn getRow(self: Self, row: Row) [N]u1 {
             std.debug.assert(row < M);
 
-            const elem_columns = get_row_by_indices(self, row);
+            const elem_columns = getRowByIndices(self, row);
 
             var out = std.mem.zeroes([N]u1);
             var elem_index = 0;
@@ -48,7 +48,7 @@ pub fn CsrMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) 
             return out;
         }
 
-        pub fn get_row_by_indices(self: Self, row: Row) []Col {
+        pub fn getRowByIndices(self: Self, row: Row) []Col {
             const row_start = self.row_indices[row];
             const row_end = self.row_indices[row + 1];
             return self.column_indices[row_start..row_end];

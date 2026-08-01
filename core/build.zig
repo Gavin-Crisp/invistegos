@@ -1,6 +1,26 @@
 const std = @import("std");
 
-fn get_config(b: *std.Build) *std.Build.Step.Options {
+pub fn build(b: *std.Build) void {
+    const config = getConfig(b);
+
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    const core = b.addModule("core", .{
+        .root_source_file = b.path("src/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    core.addOptions("config", config);
+
+    const tests = b.addTest(.{ .root_module = core });
+    const run_tests = b.addRunArtifact(tests);
+
+    const test_step = b.step("test", "run tests");
+    test_step.dependOn(&run_tests.step);
+}
+
+fn getConfig(b: *std.Build) *std.Build.Step.Options {
     const config = b.addOptions();
 
     const lcg_iterations = b.option(u64, "lcg_iterations", "iteration count for lcg_map") orelse 0;
@@ -26,22 +46,3 @@ fn get_config(b: *std.Build) *std.Build.Step.Options {
     return config;
 }
 
-pub fn build(b: *std.Build) void {
-    const config = get_config(b);
-
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
-
-    const core = b.addModule("core", .{
-        .root_source_file = b.path("src/root.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    core.addOptions("config", config);
-
-    const tests = b.addTest(.{ .root_module = core });
-    const run_tests = b.addRunArtifact(tests);
-
-    const test_step = b.step("test", "run tests");
-    test_step.dependOn(&run_tests.step);
-}

@@ -26,33 +26,33 @@ fn SimpleMatrix(m: comptime_int, n: comptime_int) type {
             return &self.buf[row * M + col];
         }
 
-        pub fn get_row(self: Self, row: Row) []u1 {
+        pub fn getRow(self: Self, row: Row) []u1 {
             std.debug.assert(row < M);
 
             self.buf[row * M .. (row + 1) * M];
         }
 
-        pub fn add_rows(self: Self, from: Row, to: Row) void {
+        pub fn addRows(self: Self, from: Row, to: Row) void {
             std.debug.assert(from < M);
             std.debug.assert(to < M);
 
-            const from_row = self.get_row(from);
-            const to_row = self.get_row(to);
+            const from_row = self.getRow(from);
+            const to_row = self.getRow(to);
 
             for (from_row, to_row) |from_el, *to_el| {
                 to_el.* ^= from_el;
             }
         }
 
-        pub fn swap_rows(self: Self, row1: Row, row2: Row) void {
+        pub fn swapRows(self: Self, row1: Row, row2: Row) void {
             std.debug.assert(row1 < M);
             std.debug.assert(row2 < M);
 
             if (row1 == row2)
                 return;
 
-            const r1 = self.get_row(row1);
-            const r2 = self.get_row(row2);
+            const r1 = self.getRow(row1);
+            const r2 = self.getRow(row2);
 
             for (r1, r2) |*r1_el, *r2_el| {
                 const tmp = r1_el.*;
@@ -61,7 +61,7 @@ fn SimpleMatrix(m: comptime_int, n: comptime_int) type {
             }
         }
 
-        pub fn into_csc(self: Self) Csc(self) {
+        pub fn intoCsc(self: Self) Csc(self) {
             var out = .{};
 
             out.column_indices[0] = 0;
@@ -93,7 +93,7 @@ fn SimpleMatrix(m: comptime_int, n: comptime_int) type {
             return csc.CscMatrix(num_nonzeroes, M, N);
         }
 
-        pub fn into_csr(self: Self) Csr(self) {
+        pub fn intoCsr(self: Self) Csr(self) {
             var out = .{};
 
             out.column_indices[0] = 0;

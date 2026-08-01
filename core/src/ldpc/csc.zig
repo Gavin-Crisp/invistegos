@@ -19,7 +19,7 @@ pub fn CscMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) 
             std.debug.assert(row < M);
             std.debug.assert(col < N);
 
-            const elem_rows = get_col_by_indices(self, col);
+            const elem_rows = getColByIndices(self, col);
 
             for (elem_rows) |elem| {
                 if (row == elem) {
@@ -30,10 +30,10 @@ pub fn CscMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) 
             return 0;
         }
 
-        pub fn get_col(self: Self, col: Col) [M]u1 {
+        pub fn getCol(self: Self, col: Col) [M]u1 {
             std.debug.assert(col < N);
 
-            const elem_rows = get_col_by_indices(self, col);
+            const elem_rows = getColByIndices(self, col);
 
             var out = std.mem.zeroes([M]u1);
             var elem_index = 0;
@@ -48,7 +48,7 @@ pub fn CscMatrix(num_nonzeroes: comptime_int, m: comptime_int, n: comptime_int) 
             return out;
         }
 
-        pub fn get_col_by_indices(self: Self, col: Col) []Row {
+        pub fn getColByIndices(self: Self, col: Col) []Row {
             const col_start = self.column_indices[col];
             const col_end = self.column_indices[col + 1];
             return self.row_indices[col_start..col_end];

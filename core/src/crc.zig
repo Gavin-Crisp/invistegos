@@ -29,8 +29,8 @@ const crc_table = blk: {
     break :blk table;
 };
 
-pub fn validate_sector(sector: EdcSector) ?EccNode {
-    const new_check_value: CheckValue = generate_check_value(sector.ecc_node);
+pub fn validateSector(sector: EdcSector) ?EccNode {
+    const new_check_value: CheckValue = generateCheckValue(sector.ecc_node);
 
     if (sector.check_value == new_check_value) {
         return sector.ecc_node;
@@ -39,11 +39,11 @@ pub fn validate_sector(sector: EdcSector) ?EccNode {
     }
 }
 
-pub fn sign_node(node: EccNode) EdcSector {
-    return EdcSector{ .ecc_node = node, .check_value = generate_check_value(node) };
+pub fn signNode(node: EccNode) EdcSector {
+    return EdcSector{ .ecc_node = node, .check_value = generateCheckValue(node) };
 }
 
-fn generate_check_value(node: EccNode) CheckValue {
+fn generateCheckValue(node: EccNode) CheckValue {
     const node_bytes = @import("std").mem.asBytes(&node);
 
     var remainder = remainder_init;
@@ -60,11 +60,11 @@ test "crc" {
     const expectEqual = @import("std").testing.expectEqual;
 
     const node_data: EccNode = 0x0384923;
-    const correct_sector = sign_node(node_data);
+    const correct_sector = signNode(node_data);
     const incorrect_sector = EdcSector{ .ecc_node = node_data << 1, .check_value = correct_sector.check_value };
 
-    try expectEqual(validate_sector(correct_sector), node_data);
-    try expectEqual(validate_sector(incorrect_sector), null);
+    try expectEqual(validateSector(correct_sector), node_data);
+    try expectEqual(validateSector(incorrect_sector), null);
 }
 
 test crc_table {

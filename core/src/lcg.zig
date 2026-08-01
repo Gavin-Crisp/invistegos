@@ -6,7 +6,7 @@ pub fn lcg(seed: u64, limit: u64) u64 {
     return (seed *% config.lcg_mult +% config.lcg_incr) % limit;
 }
 
-pub fn lcg_map(index: core.ShuffledIndex, limit: u64) core.PhysicalIndex {
+pub fn lcgMap(index: core.ShuffledIndex, limit: u64) core.PhysicalIndex {
     std.debug.assert(index < limit);
 
     var ret = lcg(index, limit);
@@ -16,7 +16,7 @@ pub fn lcg_map(index: core.ShuffledIndex, limit: u64) core.PhysicalIndex {
     return ret;
 }
 
-test lcg_map {
+test lcgMap {
     const sample_sectors = 1024 * 1024;
     const sample_offset =  0;
     const device_size = 100 * 2 * 1024 * 1024;
@@ -26,7 +26,7 @@ test lcg_map {
         var gap: f128 = 0;
         var indices: [sample_sectors]u64 = undefined;
 
-        for (0..indices.len) |i| indices[i] = lcg_map(i + sample_offset, device_size);
+        for (0..indices.len) |i| indices[i] = lcgMap(i + sample_offset, device_size);
         std.mem.sort(u64, &indices, {}, std.sort.asc(u64));
 
         var pairs = std.mem.window(u64, &indices, 2, 1);
