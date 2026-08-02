@@ -12,6 +12,11 @@ void *kernel_realloc(void *ptr, size_t size) {
 	return krealloc(ptr, size, GFP_KERNEL);
 }
 
+struct bio *alloc_bio(struct block_device *bdev,
+	unsigned short nr_vecs, blk_opf_t opf, gfp_t gfp_mask) {
+	return bio_alloc(bdev, nr_vecs, opf, gfp_mask);
+}
+
 int invistegos_impl_ctr(struct dm_target *, unsigned int , char **);
 void invistegos_impl_dtr(struct dm_target *);
 int invistegos_impl_map(struct dm_target *, struct bio *);

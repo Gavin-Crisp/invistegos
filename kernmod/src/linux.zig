@@ -30,7 +30,17 @@ pub const DmTarget = extern struct {
 
 pub const DmTable = opaque {};
 pub const TargetType = opaque {};
-pub const DmDev = opaque {};
+
+pub const DmDev = struct {
+    bdev: ?*BlockDevice,
+    file: ?*File,
+    dax_dev: ?*DaxDevice,
+    mode: BlkMode,
+    name: [16]u8,
+};
+
+pub const File = opaque {};
+pub const DaxDevice = opaque {};
 
 pub const Bio = extern struct {
     next: ?*Bio,
@@ -164,4 +174,15 @@ pub const kernelRealloc = kernel_realloc;
 
 extern fn kfree(?*anyopaque) void;
 pub const kernelFree = kfree;
+
+extern fn alloc_bio(bdev: *BlockDevice, nr_vecs: c_ushort, opf: BlkOpf, gfp_mask: Gfp) ?*Bio;
+pub const bioAlloc = alloc_bio;
+
+pub const Gfp = c_int;
+
+extern fn bio_put(*Bio) void;
+pub const bioPut = bio_put;
+
+extern fn submit_bio(bio: *Bio) void;
+pub const submitBio = submit_bio;
 

@@ -8,18 +8,6 @@ const Self = @This();
 
 dev: *linux.DmDev,
 
-pub const ContextCreateError = error {
-    NoMemory,
-    InvalidArgs,
-};
-
-pub fn convertCtxErr(err: ContextCreateError) c_int {
-    return switch (err) {
-        ContextCreateError.NoMemory => LinuxErr.nomem,
-        ContextCreateError.InvalidArgs => LinuxErr.inval,
-    };
-}
-
 pub fn create(alloc: std.mem.Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u8) ContextCreateError!*Self {
     if (argc != 1) {
         return ContextCreateError.InvalidArgs;
@@ -43,5 +31,17 @@ pub fn create(alloc: std.mem.Allocator, ti: *linux.DmTarget, argc: c_uint, argv:
 pub fn destroy(self: *Self, alloc: std.mem.Allocator, ti: *linux.DmTarget) void {
     linux.dmPutDevice(ti, self.dev);
     alloc.destroy(self);
+}
+
+pub const ContextCreateError = error {
+    NoMemory,
+    InvalidArgs,
+};
+
+pub fn convertCtxErr(err: ContextCreateError) c_int {
+    return switch (err) {
+        ContextCreateError.NoMemory => LinuxErr.nomem,
+        ContextCreateError.InvalidArgs => LinuxErr.inval,
+    };
 }
 
