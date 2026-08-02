@@ -17,6 +17,14 @@ struct bio *alloc_bio(struct block_device *bdev,
 	return bio_alloc(bdev, nr_vecs, opf, gfp_mask);
 }
 
+enum req_op bio_req_op(const struct bio *bio) {
+	return bio_op(bio);
+}
+
+void bio_dev_set(struct bio *bio, struct block_device *bdev) {
+	return bio_set_dev(bio, bdev);
+}
+
 int invistegos_impl_ctr(struct dm_target *, unsigned int , char **);
 void invistegos_impl_dtr(struct dm_target *);
 int invistegos_impl_map(struct dm_target *, struct bio *);

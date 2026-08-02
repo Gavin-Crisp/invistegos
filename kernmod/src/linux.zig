@@ -152,6 +152,28 @@ pub const BioCryptCtx = opaque {};
 pub const BioIntegrityPayload = opaque {};
 pub const BioSet = opaque {};
 
+pub const ReqOp = enum(c_int) {
+    read = 0, // read sectors from the device
+    write = 1, // write sectors to the device
+    flush = 2, // flush the volatile write cache
+    discard = 3, // discard sectors
+    secure_erase = 5, // securely erase sectors
+    zone_append = 7, // write data at the current zone write pointer
+    write_zeroes = 9, // write the zero filled sector many times
+    zone_open = 11, // Open a zone
+    zone_close = 13, // Close a zone
+    zone_finish = 15, // Transition a zone to full
+    zone_reset = 17, // reset a zone write pointer
+    zone_reset_all = 19, // reset all the zone present on the device
+
+    // Driver private requests
+    // private:
+    drv_in = 34,
+    drv_out = 35,
+
+    last = 36,
+};
+
 extern fn _printk(fmt: [*:0]const u8, ...) c_int;
 pub const printk = _printk;
 
@@ -185,4 +207,10 @@ pub const bioPut = bio_put;
 
 extern fn submit_bio(bio: *Bio) void;
 pub const submitBio = submit_bio;
+
+extern fn bio_req_op(bio: *const Bio) ReqOp;
+pub const bioOp = bio_req_op;
+
+extern fn bio_dev_set(bio: *Bio, bdev: *BlockDevice) void;
+pub const bioSetDev = bio_dev_set;
 
