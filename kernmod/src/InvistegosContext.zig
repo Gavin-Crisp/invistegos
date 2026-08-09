@@ -2,13 +2,15 @@ const core = @import("core");
 const linux = @import("linux.zig");
 const interop = @import("interop.zig");
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 const LinuxErr = interop.LinuxErr;
 
 const Self = @This();
 
+alloc: Allocator,
 dev: *linux.DmDev,
 
-pub fn create(alloc: std.mem.Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u8) ContextCreateError!*Self {
+pub fn create(alloc: Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u8) ContextCreateError!*Self {
     if (argc != 1) {
         return ContextCreateError.InvalidArgs;
     }
@@ -28,9 +30,9 @@ pub fn create(alloc: std.mem.Allocator, ti: *linux.DmTarget, argc: c_uint, argv:
     return ctx;
 }
 
-pub fn destroy(self: *Self, alloc: std.mem.Allocator, ti: *linux.DmTarget) void {
+pub fn destroy(self: *Self, ti: *linux.DmTarget) void {
     linux.dmPutDevice(ti, self.dev);
-    alloc.destroy(self);
+    self.alloc.destroy(self);
 }
 
 pub const ContextCreateError = error {

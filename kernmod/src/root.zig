@@ -20,7 +20,7 @@ pub export fn invistegos_impl_ctr(ti: *linux.DmTarget, argc: c_uint, argv: [*][*
 /// Frees ti.private
 pub export fn invistegos_impl_dtr(ti: *linux.DmTarget) callconv(.c) void {
     const context: *InvistegosContext = @ptrCast(@alignCast(ti.private));
-    context.destroy(interop.k_alloc, ti);
+    context.destroy(ti);
 }
 
 /// Returns -
