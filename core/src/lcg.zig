@@ -11,7 +11,9 @@ pub const ClusterIndex = Index;
 
 pub fn shuffleCluster(index: ClusterIndex, clusters: u64) ClusterIndex {
     var result = (index *% config.lcg_mult +% config.lcg_incr) % clusters;
-    for (0..config.lcg_iterations) |_| result = shuffleCluster(result, clusters);
+    for (0..config.lcg_iterations) |_| {
+        result = (index *% config.lcg_mult +% config.lcg_incr) % clusters;
+    }
 
     return result;
 }
