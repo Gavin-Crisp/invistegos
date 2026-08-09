@@ -1,6 +1,5 @@
 const config = @import("config");
 const core = @import("root.zig");
-
 const EdcSector = core.EdcSector;
 const EccNode = core.EccNode;
 const CheckValue = core.CheckValue;
@@ -28,6 +27,8 @@ const crc_table = blk: {
 
     break :blk table;
 };
+
+pub const signed_zero: EdcSector = signNode(0);
 
 pub fn validateSector(sector: EdcSector) ?EccNode {
     const new_check_value: CheckValue = generateCheckValue(sector.ecc_node);
