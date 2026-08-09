@@ -35,6 +35,15 @@ pub fn destroy(self: *Self, ti: *linux.DmTarget) void {
     self.alloc.destroy(self);
 }
 
+pub fn triggerFlush(self: *Self) !void {
+    // # Flush underlying
+    const bio = linux.bioAlloc(self.dev.bdev.?, 0, @intFromEnum(linux.ReqOp.flush), 0) orelse return error.OOM;
+    // # Flush cache
+    // TODO
+
+    linux.submitBio(bio);
+}
+
 pub const ContextCreateError = error {
     NoMemory,
     InvalidArgs,

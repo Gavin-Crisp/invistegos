@@ -37,8 +37,8 @@ pub export fn invistegos_impl_map(ti: *linux.DmTarget, bi: *linux.Bio) callconv(
         .read => {},
         .write => {},
         .flush => {
-            linux.bioSetDev(bi, context.dev.bdev.?);
-            return 1;
+            context.triggerFlush() catch return -interop.LinuxErr.nomem;
+            return 0;
         },
         .discard => {},
         .secure_erase => {},
