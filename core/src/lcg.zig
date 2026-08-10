@@ -2,49 +2,55 @@ const config = @import("config");
 const core = @import("root.zig");
 const std = @import("std");
 
-pub const Index = core.Index;
+pub const DeviceIndex = core.DeviceIndex;
 pub const PhysicalIndex = core.PhysicalIndex;
 pub const ShuffledIndex = core.ShuffledIndex;
 pub const cluster_size = config.lcg_cluster_size;
 
-pub const ClusterIndex = Index;
+pub const PhysicalClusterIndex = enum (u64) { _ };
+pub const ShuffledClusterIndex = enum (u64) { _ };
 
-pub fn shuffleCluster(index: ClusterIndex, clusters: u64) ClusterIndex {
-    var result = (index *% config.lcg_mult +% config.lcg_incr) % clusters;
+pub fn shuffleCluster(index: ShuffledClusterIndex, clusters: u64) PhysicalClusterIndex {
+    const index_int = @intFromEnum(index);
+
+    var result = index_int;
     for (0..config.lcg_iterations) |_| {
-        result = (index *% config.lcg_mult +% config.lcg_incr) % clusters;
+        result = (index_int *% config.lcg_mult +% config.lcg_incr) % clusters;
     }
 
-    return result;
+    return @enumFromInt(result);
 }
 
-pub fn indexCluster(index: Index) u64 {
+pub fn indexCluster(index: u64) u64 {
     return index / cluster_size;
 }
 
-pub fn indexOffset(index: Index) u64 {
+pub fn indexOffset(index: u64) u64 {
     return index % cluster_size;
 }
 
-pub fn clusterBeginning(index: ClusterIndex) Index {
+pub fn clusterBeginning(index: u64) u64 {
     return index * cluster_size;
 }
 
-pub fn spanClusters(index: Index, span_len: u64) u64 {
-    const first_cluster: ClusterIndex = index / cluster_size;
-    const last_cluster: ClusterIndex = (index + span_len - 1) / cluster_size;
+pub fn spanClusters(index: u64, span_len: u64) u64 {
+    const first_cluster: u64 = indexCluster(index);
+    const last_cluster: u64 = indexCluster(index + span_len - 1);
 
     return last_cluster - first_cluster + 1;
 }
 
 pub fn map(index: ShuffledIndex, sectors: u64) PhysicalIndex {
-    std.debug.assert(index < sectors);
+    const index_int = @intFromEnum(index);
+    std.debug.assert(index_int < sectors);
 
-    const cluster: ClusterIndex = indexCluster(index);
-    const offset = indexOffset(index);
+    const cluster: ShuffledClusterIndex = @enumFromInt(indexCluster(index_int));
+    const offset = indexOffset(index_int);
     const clusters = (sectors / cluster_size) + 1;
 
-    return shuffleCluster(cluster, clusters) + offset;
+    const physical_cluster_int = @intFromEnum(shuffleCluster(cluster, clusters));
+
+    return @enumFromInt(physical_cluster_int + offset);
 }
 
 test map {
@@ -57,7 +63,10 @@ test map {
         var gap: f128 = 0;
         var indices: [sample_sectors]u64 = undefined;
 
-        for (0..indices.len) |i| indices[i] = map(i + sample_offset, device_size);
+        for (0..indices.len) |i| {
+            const index: ShuffledIndex = @enumFromInt(i + sample_offset);
+            indices[i] = @intFromEnum(map(index, device_size));
+        }
         std.mem.sort(u64, &indices, {}, std.sort.asc(u64));
 
         var pairs = std.mem.window(u64, &indices, 2, 1);
