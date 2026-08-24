@@ -3,12 +3,14 @@ const linux = @import("linux.zig");
 const interop = @import("interop.zig");
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const IoSubmitter = @import("InvistegosContext/IoSubmitter.zig");
 const LinuxErr = interop.LinuxErr;
 
 const Self = @This();
 
 alloc: Allocator,
 dev: *linux.DmDev,
+io_submitter: IoSubmitter,
 
 pub fn create(alloc: Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u8) ContextCreateError!*Self {
     if (argc != 1) {
@@ -26,11 +28,15 @@ pub fn create(alloc: Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u
         ti.@"error" = "Couldn't get device";
         return ContextCreateError.InvalidArgs;
     }
+    errdefer linux.dmPutDevice(ti, ctx.dev);
+
+    ctx.io_handler.init();
 
     return ctx;
 }
 
 pub fn destroy(self: *Self, ti: *linux.DmTarget) void {
+    self.io_handler.deinit();
     linux.dmPutDevice(ti, self.dev);
     self.alloc.destroy(self);
 }

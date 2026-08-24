@@ -91,6 +91,7 @@ pub const Bio = extern struct {
     pool: ?*BioSet,
 };
 
+// Fun Fact: The layout of this struct may or may not be randomised, and shall always remain opaque
 pub const BlockDevice = opaque {};
 pub const BlkOpf = u32;
 
@@ -213,4 +214,16 @@ pub const bioOp = bio_req_op;
 
 extern fn bio_dev_set(bio: *Bio, bdev: *BlockDevice) void;
 pub const bioSetDev = bio_dev_set;
+
+extern fn bio_chain(bio: *Bio, parent: *Bio) void;
+pub const bioChain = bio_chain;
+
+extern fn block_device_nr_sectors(bd: *BlockDevice) u64;
+pub const blockDeviceNrSectors = block_device_nr_sectors;
+
+extern fn bio_add_page(bio: *Bio, page: *Page, len: c_uint, offset: c_uint) c_int;
+pub const bioAddPage = bio_add_page;
+
+extern fn page_alloc(gfp_mask: Gfp) *Page;
+pub const allocPage = page_alloc;
 
