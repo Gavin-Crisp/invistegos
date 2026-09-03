@@ -9,7 +9,6 @@ const LinuxErr = interop.LinuxErr;
 const Self = @This();
 
 alloc: Allocator,
-dev: *linux.DmDev,
 io_submitter: IoSubmitter,
 
 pub fn create(alloc: Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u8) ContextCreateError!*Self {
@@ -24,31 +23,28 @@ pub fn create(alloc: Allocator, ti: *linux.DmTarget, argc: c_uint, argv: [*][*]u
     errdefer alloc.destroy(ctx);
 
     const table_mode = linux.dmTableGetMode(ti.table.?);
-    if (linux.dmGetDevice(ti, @ptrCast(argv[0]), table_mode, &ctx.dev) != 0) {
+    var dev: *linux.DmDev = undefined;
+    if (linux.dmGetDevice(ti, @ptrCast(argv[0]), table_mode, &dev) != 0) {
         ti.@"error" = "Couldn't get device";
         return ContextCreateError.InvalidArgs;
     }
-    errdefer linux.dmPutDevice(ti, ctx.dev);
-
-    ctx.io_handler.init();
+    ctx.io_submitter.init(dev);
+    errdefer ctx.io_submitter.deinit(ti);
 
     return ctx;
 }
 
 pub fn destroy(self: *Self, ti: *linux.DmTarget) void {
-    self.io_handler.deinit();
-    linux.dmPutDevice(ti, self.dev);
+    self.io_submitter.deinit(ti);
     self.alloc.destroy(self);
 }
 
 pub fn triggerFlush(self: Self) !void {
-    // # Flush underlying
-    // FIXME: GFP flags
-    const bio = linux.bioAlloc(self.dev.bdev.?, 0, @intFromEnum(linux.ReqOp.flush), 0) orelse return error.OOM;
     // # Flush cache
     // TODO
 
-    linux.submitBio(bio);
+    // # Flush underlying
+    try self.io_submitter.sendFlush();
 }
 
 pub const ContextCreateError = error {

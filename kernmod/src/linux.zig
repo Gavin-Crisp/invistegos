@@ -227,3 +227,6 @@ pub const bioAddPage = bio_add_page;
 extern fn page_alloc(gfp_mask: Gfp) *Page;
 pub const allocPage = page_alloc;
 
+extern fn get_page_address(page: *const Page) *anyopaque;
+pub const pageAddress = get_page_address;
+
