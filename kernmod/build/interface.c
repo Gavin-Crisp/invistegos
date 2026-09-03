@@ -30,10 +30,10 @@ sector_t block_device_nr_sectors(struct block_device *bd) {
 }
 
 struct page *page_alloc(gfp_t gfp_mask) {
-	return alloc_page(gpf_t);
+	return alloc_page(gfp_mask);
 }
 
-int invistegos_impl_ctr(struct dm_target *, unsigned int , char **);
+int invistegos_impl_ctr(struct dm_target *, unsigned int, char **);
 void invistegos_impl_dtr(struct dm_target *);
 int invistegos_impl_map(struct dm_target *, struct bio *);
 
