@@ -48,12 +48,11 @@ pub fn sendFlush(self: Self) !void {
 }
 
 fn createRequestBios(bdev: *linux.BlockDevice, index: lcg.ShuffledIndex, sectors: u64) !*linux.Bio {
-    const index_int = @intFromEnum(index);
-    const first_cluster_size = lcg.cluster_size - lcg.indexOffset(index_int);
-    const root_bio = try createDeshuffledBio(bdev, index_int, first_cluster_size);
+    const first_cluster_size = lcg.cluster_size - index.clusterOffset();
+    const root_bio = try createDeshuffledBio(bdev, index.to(), first_cluster_size);
 
     var last_bio = root_bio;
-    var span_start = index_int + first_cluster_size;
+    var span_start = index.to() + first_cluster_size;
     var span_size = sectors - first_cluster_size;
     while (span_size > 0) {
         const size = @min(span_size, lcg.cluster_size);

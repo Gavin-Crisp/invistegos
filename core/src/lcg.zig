@@ -2,15 +2,13 @@ const config = @import("config");
 const core = @import("root.zig");
 const std = @import("std");
 
-pub const DeviceIndex = core.DeviceIndex;
 pub const PhysicalIndex = core.PhysicalIndex;
+pub const PhysicalClusterIndex = core.PhysicalClusterIndex;
 pub const ShuffledIndex = core.ShuffledIndex;
+pub const ShuffledClusterIndex = core.ShuffledClusterIndex;
 pub const cluster_size = config.lcg_cluster_size;
 
-pub const PhysicalClusterIndex = enum (u64) { _ };
-pub const ShuffledClusterIndex = enum (u64) { _ };
-
-pub fn shuffleCluster(index: ShuffledClusterIndex, clusters: u64) PhysicalClusterIndex {
+pub fn lcgCluster(index: ShuffledClusterIndex, clusters: u64) PhysicalClusterIndex {
     const index_int = @intFromEnum(index);
 
     var result = index_int;
@@ -21,36 +19,16 @@ pub fn shuffleCluster(index: ShuffledClusterIndex, clusters: u64) PhysicalCluste
     return @enumFromInt(result);
 }
 
-pub fn indexCluster(index: u64) u64 {
-    return index / cluster_size;
-}
-
-pub fn indexOffset(index: u64) u64 {
-    return index % cluster_size;
-}
-
-pub fn clusterBeginning(index: u64) u64 {
-    return index * cluster_size;
-}
-
-pub fn spanClusters(index: u64, span_len: u64) u64 {
-    const first_cluster: u64 = indexCluster(index);
-    const last_cluster: u64 = indexCluster(index + span_len - 1);
-
-    return last_cluster - first_cluster + 1;
-}
-
 pub fn map(index: ShuffledIndex, sectors: u64) PhysicalIndex {
-    const index_int = @intFromEnum(index);
-    std.debug.assert(index_int < sectors);
+    std.debug.assert(index.to() < sectors);
 
-    const cluster: ShuffledClusterIndex = @enumFromInt(indexCluster(index_int));
-    const offset = indexOffset(index_int);
+    const cluster = index.cluster();
+    const offset = index.clusterOffset();
     const clusters = (sectors / cluster_size) + 1;
 
-    const physical_cluster_int = @intFromEnum(shuffleCluster(cluster, clusters));
+    const physical_cluster = lcgCluster(cluster, clusters);
 
-    return @enumFromInt(physical_cluster_int + offset);
+    return .from(physical_cluster.to() + offset);
 }
 
 test map {

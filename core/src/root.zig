@@ -119,14 +119,15 @@
 const config = @import("config");
 
 pub const crc = @import("crc.zig");
+pub const indices = @import("indices.zig");
 pub const lcg = @import("lcg.zig");
 pub const ldpc = @import("ldpc.zig");
 
-pub const DeviceIndex = u64;
-
-pub const PhysicalIndex = enum (DeviceIndex) { _ };
-pub const ShuffledIndex = enum (DeviceIndex) { _ };
-pub const LogicalIndex = enum (DeviceIndex) { _ };
+pub const PhysicalIndex = indices.PhysicalIndex;
+pub const PhysicalClusterIndex = indices.PhysicalClusterIndex;
+pub const ShuffledIndex = indices.ShuffledIndex;
+pub const ShuffledClusterIndex = indices.ShuffledClusterIndex;
+pub const LogicalIndex = indices.LogicalIndex;
 
 pub const Sector = u4096;
 pub const EdcSector = packed struct(Sector) { ecc_node: EccNode, check_value: CheckValue };
